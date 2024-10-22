@@ -41,7 +41,7 @@ require 'time'
 require 'openssl'
 require 'base64'
 
-def sign_headers!(method:, endpoint:, date:)
+def sign_headers(method:, endpoint:, date:)
   access_id = `<ACCESS_ID>`
   secret_key =  `<SECRET_KEY>`
 
@@ -58,7 +58,7 @@ end
 date = Time.now.utc.httpdate
 endpoint = "/api/v1/distribution/artists"
 
-signed_auth_header = sign_headers!(method: :post, endpoint: endpoint, date: date)
+signed_auth_header = sign_headers(method: :get, endpoint: endpoint, date: date)
 puts signed_auth_header
 ```
 
@@ -84,11 +84,33 @@ def sign_headers(method, endpoint, date):
 date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 endpoint = "/api/v1/distribution/artists"
 
-signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
+signed_auth_header = sign_headers(method='get', endpoint=endpoint, date=date)
 print(signed_auth_header)
 ```
 
 ```javascript
+const crypto = require('crypto');
+
+function signHeaders(method, endpoint, date) {
+    const accessId = '<ACCESS_ID>';
+    const secretKey = '<SECRET_KEY>'; 
+    
+    method = method.toUpperCase();
+    const contentType = 'application/json';
+    const canonicalString = `${method},${contentType},,${endpoint},${date}`;
+    
+    const hmac = crypto.createHmac('sha256', secretKey);
+    hmac.update(canonicalString);
+    const signature = hmac.digest('base64');
+
+    return `APIAuth-HMAC-SHA256 ${accessId}:${signature}`;
+}
+
+const date = new Date().toUTCString();
+const endpoint = '/api/v1/distribution/artists';
+
+const signedAuthHeader = signHeaders('GET', endpoint, date);
+console.log(signedAuthHeader);
 ```
 
 > Make sure to replace `<ACCESS_ID>` and `<SECRET_KEY>` with your API access key.
@@ -122,7 +144,7 @@ request = Net::HTTP::Get.new(uri.path, 'Content-Type' => 'application/json')
 
 # Generate required headers
 date = Time.now.utc.httpdate
-signed_auth_header = sign_headers!(method: :get, endpoint: uri.path, date: date)
+signed_auth_header = sign_headers(method: :get, endpoint: uri.path, date: date)
 
 # Set custom headers
 request['Authorization'] = signed_auth_header
@@ -165,6 +187,35 @@ else:
 ```
 
 ```javascript
+const axios = require('axios');
+
+// Set the endpoint and HTTP method
+const url = 'https://api-staging.even.biz/api/v1/distribution/artists';
+const method = 'GET';
+const endpoint = '/api/v1/distribution/artists';
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders(method, endpoint, date);
+
+// Send the request using axios
+axios.get(url, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
 ```
 
 > The above command returns JSON structured like this:
@@ -241,7 +292,7 @@ request = Net::HTTP::Get.new(uri.path, 'Content-Type' => 'application/json')
 
 # Generate required headers
 date = Time.now.utc.httpdate
-signed_auth_header = sign_headers!(method: :get, endpoint: uri.path, date: date)
+signed_auth_header = sign_headers(method: :get, endpoint: uri.path, date: date)
 
 # Set custom headers
 request['Authorization'] = signed_auth_header
@@ -284,6 +335,35 @@ else:
 ```
 
 ```javascript
+const axios = require('axios');
+
+// Set the endpoint and HTTP method
+const url = 'https://api-staging.even.biz/api/v1/distribution/artists/1';
+const method = 'GET';
+const endpoint = '/api/v1/distribution/artists/1';
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders(method, endpoint, date);
+
+// Send the request using axios
+axios.get(url, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
 ```
 
 > The above command returns JSON structured like this:
@@ -349,7 +429,7 @@ request = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
 
 # Generate required headers
 date = Time.now.utc.httpdate
-signed_auth_header = sign_headers!(method: :post, endpoint: uri.path, date: date)
+signed_auth_header = sign_headers(method: :post, endpoint: uri.path, date: date)
 
 # Set custom headers
 request['Authorization'] = signed_auth_header
@@ -436,6 +516,57 @@ else:
 ```
 
 ```javascript
+const axios = require('axios');
+
+// Set the endpoint and HTTP method
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists';
+const method = 'POST';
+const endpoint = '/api/v1/distribution/artists';
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders(method, endpoint, date);
+
+// Prepare the request body
+const body = {
+    artists: [
+        {
+            name: 'Snarky Puppy',
+            email: 'Snarky@puppy.com',
+            links: {
+                spotify: 'https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA',
+                instagram: 'https://www.instagram.com/snarkypuppy'
+            }
+        },
+        {
+            name: 'Unknow Artist',
+            email: 'unknow@artist.com',
+            links: {
+                spotify: 'https://open.spotify.com/artist/unknow',
+                youtube: 'https://www.instagram.com/unknow'
+            }
+        }
+    ]
+};
+
+// Send the request using axios
+axios.post(url, body, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
 
 ```
 
