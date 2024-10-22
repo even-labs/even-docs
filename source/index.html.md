@@ -5,6 +5,7 @@ language_tabs: # must be one of https://github.com/rouge-ruby/rouge/wiki/List-of
   - ruby
   - python
   - javascript
+  - php
 
 toc_footers:
   - <a href='#'>Contact us</a>
@@ -113,6 +114,27 @@ const signedAuthHeader = signHeaders('GET', endpoint, date);
 console.log(signedAuthHeader);
 ```
 
+```php
+function sign_headers($method, $endpoint, $date) {
+    $access_id = '<ACCESS_ID>';
+    $secret_key = '<SECRET_KEY>';
+
+    $method = strtoupper($method);
+    $content_type = "application/json";
+
+    $canonical_string = "$method,$content_type,,$endpoint,$date";
+    $signature = base64_encode(hash_hmac('sha256', $canonical_string, $secret_key, true));
+
+    return "APIAuth-HMAC-SHA256 $access_id:$signature";
+}
+
+$date = gmdate('D, d M Y H:i:s T');
+$endpoint = "/api/v1/distribution/artists";
+
+$signed_auth_header = sign_headers('get', $endpoint, $date);
+echo $signed_auth_header;
+```
+
 > Make sure to replace `<ACCESS_ID>` and `<SECRET_KEY>` with your API access key.
 
 EVEN uses `<ACCESS_ID>` and `<SECRET_KEY>` to allow access to the API. 
@@ -216,6 +238,46 @@ axios.get(url, {
             console.error(error.message);
         }
     });
+```
+
+```php
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'GET';
+$endpoint = parse_url($uri, PHP_URL_PATH);
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
 ```
 
 > The above command returns JSON structured like this:
@@ -364,6 +426,46 @@ axios.get(url, {
             console.error(error.message);
         }
     });
+```
+
+```php
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/1";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'GET';
+$endpoint = parse_url($uri, PHP_URL_PATH);
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
 ```
 
 > The above command returns JSON structured like this:
@@ -567,8 +669,72 @@ axios.post(url, body, {
             console.error(error.message);
         }
     });
-
 ```
+
+```php
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'POST';
+$endpoint = parse_url($uri, PHP_URL_PATH);
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Request body
+$body = json_encode([
+    "artists" => [
+        [
+            "name" => "Snarky Puppy",
+            "email" => "Snarky@puppy.com",
+            "links" => [
+                "spotify" => "https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA",
+                "instagram" => "https://www.instagram.com/snarkypuppy",
+                "soundcloud" => "https://soundcloud.com/snarkypuppy"
+            ],
+        ],
+        [
+            "name" => "Unknown Artist",
+            "email" => "unknown@artist.com",
+            "links" => [
+                "spotify" => "https://open.spotify.com/artist/unknown",
+                "youtube" => "https://www.instagram.com/unknown"
+            ]
+        ]
+    ]
+]);
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
+```
+
 
 > The above command returns JSON structured like this:
 
