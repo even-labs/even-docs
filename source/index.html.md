@@ -1298,6 +1298,60 @@ EVEN offers these methods for data delivery using AWS.
 
 Contact <a href= "mailto: support@even.biz"> support@even.biz</a> for help.
 
+### How Data Delivery works with AWS
+
+After getting in contact with support and taking a look at your specific case, we'll generate a set of AWS S3 Bucket credentials. You'll be able to upload your DDEX ERN-compliant message (we support version 3.8 and 4.1).
+
+### What happens after I upload my ERN XML File?
+
+Every 24 hours we'll download the newly-uploaded XML files from our partner buckets to be processed. While processing we'll:
+
+* Create the Release on EVEN.
+* Create the Release's tracks on EVEN.
+* Create the associated Artists on EVEN.
+* Create the associated images and attach them to the release on EVEN.
+* If the Artists inside the XML already exist, we'll notify them a Release was created for them and add them to the Partner's Artist Catalog if they're not there yet.
+* Any existing Releases will be updated.
+
+We'll provide an example XML document with all the basic information your ERN needs to have.
+
+### What happens when an Artist I created via the API is included in one of my ERN?
+
+When processing your ERN we'll look for an Artist with the same name inside the Partner's Artist Catalog. In addition, the NRE XML file can include an optional field depending on your standard version. This way they can be successfully linked together instead of creating repeat Artists.
+
+```xml
+Version 4.1 >=
+
+<DisplayArtist>
+    <PartyName>
+        <FullName>Artist Name</FullName>
+    </PartyName>
+    <PartyContact>
+        <ContactType>email</ContactType>
+        <ContactValue>artist@example.com</ContactValue>
+    </PartyContact>
+</DisplayArtist>
+```
+
+```xml
+Version 3.8 <=
+
+<DisplayArtist>
+    <PartyName>
+        <FullName>Artist Name</FullName>
+    </PartyName>
+    <custom:Email>artist@example.com</custom:Email>
+</DisplayArtist>
+```
+
+### What happens when I create Artists via an ERN messsage but not the API?
+
+It's up to the partner what they want to do with their artists. For exmaple, including the `PartyContact` field with the Artist email in the ERN message file will automatically create an EVEN invitation for the Artist. The Artist will receive the invitation via email letting them know they have an Artist profile waiting for them. Alternatively, a partner can manually assign emails and generate invitation for the Artists from Bakcstage, or just letting support know about the changes.
+
+For further questions and support:
+
+Contact <a href= "mailto: support@even.biz"> support@even.biz</a> for help.
+
 ## SFTP
 
 EVEN offers these methods for data delivery using SFTP.
