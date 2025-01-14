@@ -799,7 +799,7 @@ curl_close($ch);
 
 ```
 
-This endpoint create a bulk artists.
+This endpoint creates artists in bulk.
 
 ### HTTP Request
 
@@ -1289,6 +1289,163 @@ artists[].about | Artist About page | No
 artists[].country | Artist's country | No
 artists[].city | Artist's city | No
 artists[].complete | Marking an Artist as complete will create an Invitation and send an email to said Artist asking them to join EVEN. You can mark an Artist as complete later via an update with `PUT` if there's still data that needs to be filled in after creating an Artist. | No
+
+## Remove Artist
+
+This endpoint receives an `:id` and removes the Artist from the Partner's Catalog.
+
+**Note**: This endpoint will **not** remove the Artist from our database. It will only remove the associations between the Partner and the Artist. For full data deletion, please contact us.
+
+You can verify the request work from the HTTP status `200` response, and by using the `api/v1/distribution/artists` or `api/v1/distribution/artists/:id` endpoints to make sure the artist is no longer available for that Partner.
+
+### HTTP Request
+
+- **Production**: `POST https://api.even.biz/api/v1/distribution/artists/:id/remove`
+- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists/:id/remove`
+
+### URL Parameters
+
+Parameter | Description | Required
+--------- | ----------- | -----------
+ID | The ID of the artist to retrieve| Yes
+
+```ruby
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:id/remove")
+
+# Prepare HTTP request
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+
+request = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+
+# Generate required headers
+date = Time.now.utc.httpdate
+signed_auth_header = sign_headers(method: :post, endpoint: uri.path, date: date)
+
+# Set custom headers
+request['Authorization'] = signed_auth_header
+request['Date'] = date
+
+body = {}
+request.body = body.to_json
+
+# Send request
+response = http.request(request)
+
+# Handle response
+if response.is_a?(Net::HTTPSuccess)
+  puts "Success: #{response.body}"
+else
+  puts "Error: #{response.code} #{response.message}"
+end
+```
+
+```python
+# Prepare URL and headers
+url = "https://api-staging.even.biz/api/v1/distribution/artists/:id/remove"
+endpoint = "/api/v1/distribution/artists/:id/remove"
+date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
+
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': signed_auth_header,
+    'Date': date
+}
+
+# Prepare request body
+body = {}
+
+# Send POST request
+response = requests.post(url, headers=headers, json=body)
+
+# Handle response
+if response.status_code == 200:
+    print(f"Success: {response.text}")
+else:
+    print(f"Error: {response.status_code} {response.reason}")
+```
+
+```javascript
+const axios = require('axios');
+
+// Set the endpoint and HTTP method
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/:id/remove';
+const method = 'POST';
+const endpoint = '/api/v1/distribution/artists/:id/remove';
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders(method, endpoint, date);
+
+// Prepare the request body
+const body = {};
+
+// Send the request using axios
+axios.post(url, body, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
+```
+
+```php
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/:id/remove";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'POST';
+$endpoint = parse_url($uri, PHP_URL_PATH);
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Request body
+$body = json_encode([]);
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
+```
+
+> The above command returns an HTTP status `200`.
 
 # Data Delivery Method
 
