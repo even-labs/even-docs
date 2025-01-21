@@ -1463,12 +1463,12 @@ You'll be able to upload your DDEX ERN-compliant message (we support version 3.8
 
 ### File Structure
 
-| **Parameter**        | **Description**                                                                                                                                             | **Required** |
-|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| **Batch Id**         | A batch Id represents the date and time of its creation using the format `YYYYMMDDhhmmssnnn`. The batch Id is unique and used to name the batch directory.  | Yes          |
-| **Root Directory**   | The root release directory contains two items: the release notification XML file and a "resources" directory.                                               | Yes          |
-| **Release Folder**   | Every release within the batch must have a separate folder using the ReleaseId of the release as its name. Conventionally, this is the album UPC or EAN.    | Yes          |
-| **Resources Folder** | The "resources" directory contains all the track MP3 or WAV files specified within the release and an image resource file for the release's album art.     | Yes          |
+| **Parameter**        | **Description**                                                                                                                                              | **Required** |
+|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| **Batch Id**         | A batch Id represents the date and time of its creation using the format `YYYYMMDDhhmmssnnn`. The batch Id is unique and used to name the batch directory.   | Yes          |
+| **Root Directory**   | The root release directory contains two items: the release notification XML file and a "resources" directory.                                                | Yes          |
+| **Release Folder**   | Every release within the batch must have a separate folder using the ReleaseId of the release as its name. Conventionally, this is the album UPC or EAN.     | Yes          |
+| **Resources Folder** | The "resources" directory contains all the track MP3, FLAC or WAV files specified within the release and an image resource file for the release's album art. | Yes          |
 
 
 ```shell
