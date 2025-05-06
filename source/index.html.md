@@ -509,8 +509,8 @@ This endpoint retrieves a specific artist.
 
 ### HTTP Request
 
-- **Production**: `GET https://api.even.biz/api/v1/distribution/artists/<ID>`
-- **Stage**: `GET https://api-staging.even.biz/api/v1/distribution/artists/<ID>`
+- **Production**: `GET https://api.even.biz/api/v1/distribution/artists/:artist_id`
+- **Stage**: `GET https://api-staging.even.biz/api/v1/distribution/artists/:artist_id`
 
 ### URL Parameters
 
@@ -812,14 +812,13 @@ Parameter | Description | Required
 --------- | ----------- | --------
 artists | An array of objects containing information about artists. | Yes
 artists[].name | The name of the artist. | Yes
-artists[].email | The email address of the artist. | Yes
+artists[].email | The email address of the artist. | No
 artists[].links | An object containing the artist's social media links. | Yes
 artists[].links.spotify | The Spotify link of the artist. | Yes
 artists[].links.instagram | The Instagram link of the artist (if available). | No
 artists[].links.soundcloud | The SoundCloud link of the artist (if available). | No
 artists[].links.youtube | The YouTube link of the artist (if available). | No
 artists[].complete | Marking an Artist as complete will create an Invitation and send an email to said Artist asking them to join EVEN. You can mark an Artist as complete later via an update with `PUT` if there's still data that needs to be filled in after creating an Artist. | No
-
 
 ## Import Artists with CSV File
 
@@ -828,7 +827,7 @@ This endpoint receives a CSV file that will import all artists similar to the Bu
 **Note**: This will only work with CSV files. Other files will return an error.
 
 ```ruby
-uri = URI("https://api-staging.even.biz/api/v1/distribution/artists")
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/import")
 
 # Prepare HTTP request
 http = Net::HTTP.new(uri.host, uri.port)
@@ -864,8 +863,8 @@ end
 
 ```python
 # Prepare URL and headers
-url = "https://api-staging.even.biz/api/v1/distribution/artists"
-endpoint = "/api/v1/distribution/artists"
+url = "https://api-staging.even.biz/api/v1/distribution/artists/import"
+endpoint = "/api/v1/distribution/artists/import"
 date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
 
@@ -896,9 +895,9 @@ else:
 const axios = require('axios');
 
 // Set the endpoint and HTTP method
-const url = 'http://api-staging.even.biz/api/v1/distribution/artists';
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/import';
 const method = 'POST';
-const endpoint = '/api/v1/distribution/artists';
+const endpoint = '/api/v1/distribution/artists/import';
 
 // Generate date and authorization header
 const date = new Date().toUTCString();
@@ -932,7 +931,7 @@ axios.post(url, body, {
 ```
 
 ```php
-$uri = "https://api-staging.even.biz/api/v1/distribution/artists";
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/import";
 
 // Prepare HTTP request
 $ch = curl_init($uri);
@@ -1061,6 +1060,219 @@ name,email,spotify_url,youtube_url,instagram_url
 Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888,https://music.youtube.com/Snarky,https://www.instagram.com/Snarky/
 ```
 
+## Claim Artist
+
+This endpoint receives an `artist_id` to claim the Artist associated with the specified email fields.
+
+It will then create an Invitation and send an email to the Artist, inviting them to join EVEN.
+
+
+**Note**: Only one Artist can be claimed per HTTP Request.
+
+
+```ruby
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim")
+
+# Prepare HTTP request
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+
+request = Net::HTTP::Post.new(uri.path, 'Content-Type' => 'application/json')
+
+# Generate required headers
+date = Time.now.utc.httpdate
+signed_auth_header = sign_headers(method: :post, endpoint: uri.path, date: date)
+
+# Set custom headers
+request['Authorization'] = signed_auth_header
+request['Date'] = date
+
+body = {
+  artist: {
+    email: "artist@music.com"
+  }
+}
+request.body = body.to_json
+
+# Send request
+response = http.request(request)
+
+# Handle response
+if response.is_a?(Net::HTTPSuccess)
+  puts "Success: #{response.body}"
+else
+  puts "Error: #{response.code} #{response.message}"
+end
+```
+
+```python
+# Prepare URL and headers
+url = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim"
+endpoint = "/api/v1/distribution/artists/:artist_id/claim"
+date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
+
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': signed_auth_header,
+    'Date': date
+}
+
+# Prepare request body
+body = {
+    "artist": {
+      "name": "updated name",
+      "country": "US",
+      "email": "artist@music.com"
+    }
+}
+
+# Send POST request
+response = requests.post(url, headers=headers, json=body)
+
+# Handle response
+if response.status_code == 200:
+    print(f"Success: {response.text}")
+else:
+    print(f"Error: {response.status_code} {response.reason}")
+```
+
+```javascript
+const axios = require('axios');
+
+// Set the endpoint and HTTP method
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim';
+const method = 'POST';
+const endpoint = '/api/v1/distribution/artists/:artist_id/claim';
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders(method, endpoint, date);
+
+// Prepare the request body
+const body = {
+  artist: {
+    email: "artist@music.com"
+  }
+};
+
+// Send the request using axios
+axios.post(url, body, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
+```
+
+```php
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'POST';
+$endpoint = parse_url($uri, PHP_URL_PATH);
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Request body
+$body = json_encode([
+    "artist" => {
+        "email" => "artist@email.com"
+    }
+]);
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+  "data": {
+    "id": "1",
+    "type": "artist",
+    "attributes": {
+      "id": 1,
+      "name": "updated name",
+      "slug": "updated-name",
+      "username": "artist-53f58fa7-4cc4-4925-b261-0ecd16e85c0b",
+      "external_link": null,
+      "bio": "some cool bio",
+      "about": null,
+      "links": null,
+      "published": true,
+      "country": "US",
+      "city": null,
+      "private": true,
+      "hidden": true,
+      "verified": false,
+      "onboarded": false,
+      "created_at": "2024-10-07T05:59:46.957Z",
+      "updated_at": "2024-10-07T05:59:46.957Z",
+      "upload_status": "approved"
+    },
+    "relationships": {
+      "releases": {
+        "data": []
+      }
+    }
+  },
+  "included": []
+}
+```
+
+### HTTP Request
+
+- **Production**: `POST https://api.even.biz/api/v1/distribution/artists/:artist_id/claim`
+- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim`
+
+### Body Parameters
+
+Parameter | Description | Required
+--------- | ----------- | --------
+artist | Artist object containing the fields to be edited. | Yes
+artists[].email | The email address of the artist. | Yes
+
 ## Update Artist
 
 This endpoint receives an `artist_id` and updates the Artist with the specified fields.
@@ -1069,7 +1281,7 @@ This endpoint receives an `artist_id` and updates the Artist with the specified 
 
 
 ```ruby
-uri = URI("https://api-staging.even.biz/api/v1/distribution/artists")
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:artist_id")
 
 # Prepare HTTP request
 http = Net::HTTP.new(uri.host, uri.port)
@@ -1107,8 +1319,8 @@ end
 
 ```python
 # Prepare URL and headers
-url = "https://api-staging.even.biz/api/v1/distribution/artists"
-endpoint = "/api/v1/distribution/artists"
+url = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id"
+endpoint = "/api/v1/distribution/artists/:artist_id"
 date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
 
@@ -1141,9 +1353,9 @@ else:
 const axios = require('axios');
 
 // Set the endpoint and HTTP method
-const url = 'http://api-staging.even.biz/api/v1/distribution/artists';
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/:artist_id';
 const method = 'POST';
-const endpoint = '/api/v1/distribution/artists';
+const endpoint = '/api/v1/distribution/artists/:artist_id';
 
 // Generate date and authorization header
 const date = new Date().toUTCString();
@@ -1179,7 +1391,7 @@ axios.post(url, body, {
 ```
 
 ```php
-$uri = "https://api-staging.even.biz/api/v1/distribution/artists";
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id";
 
 // Prepare HTTP request
 $ch = curl_init($uri);
@@ -1300,8 +1512,8 @@ You can verify the request work from the HTTP status `200` response, and by usin
 
 ### HTTP Request
 
-- **Production**: `POST https://api.even.biz/api/v1/distribution/artists/:id/remove`
-- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists/:id/remove`
+- **Production**: `POST https://api.even.biz/api/v1/distribution/artists/:artist_id/remove`
+- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove`
 
 ### URL Parameters
 
@@ -1310,7 +1522,7 @@ Parameter | Description | Required
 ID | The ID of the artist to retrieve| Yes
 
 ```ruby
-uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:id/remove")
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove")
 
 # Prepare HTTP request
 http = Net::HTTP.new(uri.host, uri.port)
@@ -1342,8 +1554,8 @@ end
 
 ```python
 # Prepare URL and headers
-url = "https://api-staging.even.biz/api/v1/distribution/artists/:id/remove"
-endpoint = "/api/v1/distribution/artists/:id/remove"
+url = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove"
+endpoint = "/api/v1/distribution/artists/:artist_id/remove"
 date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
 
@@ -1370,9 +1582,9 @@ else:
 const axios = require('axios');
 
 // Set the endpoint and HTTP method
-const url = 'http://api-staging.even.biz/api/v1/distribution/artists/:id/remove';
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove';
 const method = 'POST';
-const endpoint = '/api/v1/distribution/artists/:id/remove';
+const endpoint = '/api/v1/distribution/artists/:artist_id/remove';
 
 // Generate date and authorization header
 const date = new Date().toUTCString();
@@ -1402,7 +1614,7 @@ axios.post(url, body, {
 ```
 
 ```php
-$uri = "https://api-staging.even.biz/api/v1/distribution/artists/:id/remove";
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove";
 
 // Prepare HTTP request
 $ch = curl_init($uri);
