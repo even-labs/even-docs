@@ -1524,7 +1524,7 @@ ID | The ID of the artist to retrieve| Yes
 ```ruby
 uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove")
 
-# Prepare HTTP request
+# Prepare HTTP request.
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = true
 
