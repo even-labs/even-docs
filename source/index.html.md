@@ -588,7 +588,7 @@ headers = {
 body = {
     "artists": [
         {
-            "name": "Snarky Puppy",
+            "name": "Snarky Puppy.",
             "email": "Snarky@puppy.com",
             "links": {
                 "spotify": "https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA",
