@@ -292,6 +292,7 @@ curl_close($ch);
         "id": 1,
         "name": "Jane Doe",
         "slug": "jane-doe",
+        "external_id": "123456",
         "hidden": true
       },
       "relationships": {}
@@ -303,6 +304,7 @@ curl_close($ch);
         "id": 2,
         "name": "John Doe",
         "slug": "john-doe",
+        "external_id": "123457",
         "hidden": true
       },
       "relationships": {}
@@ -491,6 +493,7 @@ curl_close($ch);
       "hidden": true,
       "verified": false,
       "onboarded": false,
+      "external_id": "123456",
       "created_at": "2024-10-07T05:59:46.957Z",
       "updated_at": "2024-10-07T05:59:46.957Z",
       "upload_status": "approved"
@@ -542,6 +545,7 @@ body = {
     {
       name: "Snarky Puppy",
       email: "Snarky@puppy.com",
+      external_id: "12345678",
       links: {
         "spotify": "https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA",
         "instagram": "https://www.instagram.com/snarkypuppy",
@@ -773,6 +777,7 @@ curl_close($ch);
         "country": "us",
         "upload_status": "approved",
         "notes": null,
+        "external_id": "12345678",
         "party_identifier_id": 1,
         "referred_by_type": null,
         "referred_by_id": null,
@@ -808,16 +813,17 @@ This endpoint creates artists in bulk.
 
 ### Body Parameters
 
-Parameter | Description | Required
---------- | ----------- | --------
-artists | An array of objects containing information about artists. | Yes
-artists[].name | The name of the artist. | Yes
-artists[].email | The email address of the artist. | No
-artists[].links | An object containing the artist's social media links. | Yes
-artists[].links.spotify | The Spotify link of the artist. | Yes
-artists[].links.instagram | The Instagram link of the artist (if available). | No
-artists[].links.soundcloud | The SoundCloud link of the artist (if available). | No
-artists[].links.youtube | The YouTube link of the artist (if available). | No
+Parameter | Description                                                                                                                                                                                                                                                     | Required
+--------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| --------
+artists | An array of objects containing information about artists.                                                                                                                                                                                                       | Yes
+artists[].name | The name of the artist.                                                                                                                                                                                                                                         | Yes
+artists[].email | The email address of the artist.                                                                                                                                                                                                                                | No
+artists[].external_id | A unique identifier for the artist provided by the partner. This value is optional and is only used to help the partner reference or match the artist with their own internal systems. It is not generated or validated by EVEN.                                                                                                                                                                                                                                  | No
+artists[].links | An object containing the artist's social media links.                                                                                                                                                                                                           | Yes
+artists[].links.spotify | The Spotify link of the artist.                                                                                                                                                                                                                                 | Yes
+artists[].links.instagram | The Instagram link of the artist (if available).                                                                                                                                                                                                                | No
+artists[].links.soundcloud | The SoundCloud link of the artist (if available).                                                                                                                                                                                                               | No
+artists[].links.youtube | The YouTube link of the artist (if available).                                                                                                                                                                                                                  | No
 artists[].complete | Marking an Artist as complete will create an Invitation and send an email to said Artist asking them to join EVEN. You can mark an Artist as complete later via an update with `PUT` if there's still data that needs to be filled in after creating an Artist. | No
 
 ## Import Artists with CSV File
@@ -1015,6 +1021,7 @@ curl_close($ch);
         "country": "us",
         "upload_status": "approved",
         "notes": null,
+        "external_id": "123456789",
         "party_identifier_id": 1,
         "referred_by_type": null,
         "referred_by_id": null,
@@ -1056,8 +1063,8 @@ file | CSV File containing the artists to be imported. | Yes
 > You will find an example CSV file below.
 
 ```csv
-name,email,spotify_url,youtube_url,instagram_url
-Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888,https://music.youtube.com/Snarky,https://www.instagram.com/Snarky/
+name,email,spotify_url,youtube_url,instagram_url,external_id
+Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888,https://music.youtube.com/Snarky,https://www.instagram.com/Snarky/,12345678
 ```
 
 ## Claim Artist
