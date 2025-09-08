@@ -524,7 +524,7 @@ ID | The ID of the artist to retrieve| Yes
 ## Create Bulk Artists
 
 ```ruby
-uri = URI("https://api-staging.even.biz/api/v1/distribution/artists")
+uri = URI("https://api-staging.even.biz/api/v1/distribution/artists/bulk_create")
 
 # Prepare HTTP request
 http = Net::HTTP.new(uri.host, uri.port)
@@ -577,8 +577,8 @@ end
 
 ```python
 # Prepare URL and headers
-url = "https://api-staging.even.biz/api/v1/distribution/artists"
-endpoint = "/api/v1/distribution/artists"
+url = "https://api-staging.even.biz/api/v1/distribution/artists/bulk_create"
+endpoint = "/api/v1/distribution/artists/bulk_create"
 date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
 signed_auth_header = sign_headers(method='post', endpoint=endpoint, date=date)
 
@@ -625,9 +625,9 @@ else:
 const axios = require('axios');
 
 // Set the endpoint and HTTP method
-const url = 'http://api-staging.even.biz/api/v1/distribution/artists';
+const url = 'http://api-staging.even.biz/api/v1/distribution/artists/bulk_create';
 const method = 'POST';
-const endpoint = '/api/v1/distribution/artists';
+const endpoint = '/api/v1/distribution/artists/bulk_create';
 
 // Generate date and authorization header
 const date = new Date().toUTCString();
@@ -676,7 +676,7 @@ axios.post(url, body, {
 ```
 
 ```php
-$uri = "https://api-staging.even.biz/api/v1/distribution/artists";
+$uri = "https://api-staging.even.biz/api/v1/distribution/artists/bulk_create";
 
 // Prepare HTTP request
 $ch = curl_init($uri);
@@ -808,8 +808,8 @@ This endpoint creates artists in bulk.
 
 ### HTTP Request
 
-- **Production**: `POST https://api.even.biz/api/v1/distribution/artists`
-- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists`
+- **Production**: `POST https://api.even.biz/api/v1/distribution/artists/bulk_create`
+- **Stage**: `POST https://api-staging.even.biz/api/v1/distribution/artists/bulk_create`
 
 ### Body Parameters
 
