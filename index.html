@@ -331,6 +331,9 @@
                     <a href="#get-specific-artist" class="toc-h2 toc-link" data-title="Get Specific Artist">Get Specific Artist</a>
                   </li>
                   <li>
+                    <a href="#create-artist" class="toc-h2 toc-link" data-title="Create Artist">Create Artist</a>
+                  </li>
+                  <li>
                     <a href="#create-bulk-artists" class="toc-h2 toc-link" data-title="Create Bulk Artists">Create Bulk Artists</a>
                   </li>
                   <li>
@@ -838,6 +841,269 @@ You must replace <code>SIGNED_AUTHORIZATION_HEADER</code>.
 <td>Yes</td>
 </tr>
 </tbody></table>
+<h2 id='create-artist'>Create Artist</h2><div class="highlight"><pre class="highlight ruby tab-ruby"><code><span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">(</span><span class="s2">"https://api-staging.even.biz/api/v1/distribution/artists"</span><span class="p">)</span>
+
+<span class="c1"># Prepare HTTP request</span>
+<span class="n">http</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="nf">host</span><span class="p">,</span> <span class="n">uri</span><span class="p">.</span><span class="nf">port</span><span class="p">)</span>
+<span class="n">http</span><span class="p">.</span><span class="nf">use_ssl</span> <span class="o">=</span> <span class="kp">true</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">::</span><span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="nf">path</span><span class="p">,</span> <span class="s1">'Content-Type'</span> <span class="o">=&gt;</span> <span class="s1">'application/json'</span><span class="p">)</span>
+
+<span class="c1"># Generate required headers</span>
+<span class="n">date</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">utc</span><span class="p">.</span><span class="nf">httpdate</span>
+<span class="n">signed_auth_header</span> <span class="o">=</span> <span class="n">sign_headers</span><span class="p">(</span><span class="ss">method: :post</span><span class="p">,</span> <span class="ss">endpoint: </span><span class="n">uri</span><span class="p">.</span><span class="nf">path</span><span class="p">,</span> <span class="ss">date: </span><span class="n">date</span><span class="p">)</span>
+
+<span class="c1"># Set custom headers</span>
+<span class="n">request</span><span class="p">[</span><span class="s1">'Authorization'</span><span class="p">]</span> <span class="o">=</span> <span class="n">signed_auth_header</span>
+<span class="n">request</span><span class="p">[</span><span class="s1">'Date'</span><span class="p">]</span> <span class="o">=</span> <span class="n">date</span>
+
+<span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">artist: </span><span class="p">{</span>
+      <span class="ss">name: </span><span class="s2">"Snarky Puppy"</span><span class="p">,</span>
+      <span class="ss">email: </span><span class="s2">"Snarky@puppy.com"</span><span class="p">,</span>
+      <span class="ss">external_id: </span><span class="s2">"12345678"</span><span class="p">,</span>
+      <span class="ss">links: </span><span class="p">{</span>
+        <span class="s2">"spotify"</span><span class="p">:</span> <span class="s2">"https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA"</span><span class="p">,</span>
+        <span class="s2">"instagram"</span><span class="p">:</span> <span class="s2">"https://www.instagram.com/snarkypuppy"</span><span class="p">,</span>
+        <span class="s2">"soundcloud"</span><span class="p">:</span> <span class="s2">"https://soundcloud.com/snarkypuppy"</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">request</span><span class="p">.</span><span class="nf">body</span> <span class="o">=</span> <span class="n">body</span><span class="p">.</span><span class="nf">to_json</span>
+
+<span class="c1"># Send request</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="p">.</span><span class="nf">request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<span class="c1"># Handle response</span>
+<span class="k">if</span> <span class="n">response</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">Net</span><span class="o">::</span><span class="no">HTTPSuccess</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"Success: </span><span class="si">#{</span><span class="n">response</span><span class="p">.</span><span class="nf">body</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"Error: </span><span class="si">#{</span><span class="n">response</span><span class="p">.</span><span class="nf">code</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">response</span><span class="p">.</span><span class="nf">message</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre></div><div class="highlight"><pre class="highlight python tab-python"><code><span class="c1"># Prepare URL and headers
+</span><span class="n">url</span> <span class="o">=</span> <span class="s">"https://api-staging.even.biz/api/v1/distribution/artists"</span>
+<span class="n">endpoint</span> <span class="o">=</span> <span class="s">"/api/v1/distribution/artists"</span>
+<span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">.</span><span class="n">utcnow</span><span class="p">().</span><span class="n">strftime</span><span class="p">(</span><span class="s">'%a, %d %b %Y %H:%M:%S GMT'</span><span class="p">)</span>
+<span class="n">signed_auth_header</span> <span class="o">=</span> <span class="n">sign_headers</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'post'</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">)</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/json'</span><span class="p">,</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="n">signed_auth_header</span><span class="p">,</span>
+    <span class="s">'Date'</span><span class="p">:</span> <span class="n">date</span>
+<span class="p">}</span>
+
+<span class="c1"># Prepare request body
+</span><span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"artist"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">"name"</span><span class="p">:</span> <span class="s">"Snarky Puppy."</span><span class="p">,</span>
+            <span class="s">"email"</span><span class="p">:</span> <span class="s">"Snarky@puppy.com"</span><span class="p">,</span>
+            <span class="s">"links"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">"spotify"</span><span class="p">:</span> <span class="s">"https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA"</span><span class="p">,</span>
+                <span class="s">"instagram"</span><span class="p">:</span> <span class="s">"https://www.instagram.com/snarkypuppy"</span><span class="p">,</span>
+                <span class="s">"soundcloud"</span><span class="p">:</span> <span class="s">"https://soundcloud.com/snarkypuppy"</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Send POST request
+</span><span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="p">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+
+<span class="c1"># Handle response
+</span><span class="k">if</span> <span class="n">response</span><span class="p">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"Success: </span><span class="si">{</span><span class="n">response</span><span class="p">.</span><span class="n">text</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">"Error: </span><span class="si">{</span><span class="n">response</span><span class="p">.</span><span class="n">status_code</span><span class="si">}</span><span class="s"> </span><span class="si">{</span><span class="n">response</span><span class="p">.</span><span class="n">reason</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre class="highlight javascript tab-javascript"><code><span class="kd">const</span> <span class="nx">axios</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">axios</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="c1">// Set the endpoint and HTTP method</span>
+<span class="kd">const</span> <span class="nx">url</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">http://api-staging.even.biz/api/v1/distribution/artists</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">method</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">/api/v1/distribution/artists</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="c1">// Generate date and authorization header</span>
+<span class="kd">const</span> <span class="nx">date</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">toUTCString</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">authorization</span> <span class="o">=</span> <span class="nx">signHeaders</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">endpoint</span><span class="p">,</span> <span class="nx">date</span><span class="p">);</span>
+
+<span class="c1">// Prepare the request body</span>
+<span class="kd">const</span> <span class="nx">body</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">artist</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">name</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Snarky Puppy</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">email</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Snarky@puppy.com</span><span class="dl">'</span><span class="p">,</span>
+            <span class="na">links</span><span class="p">:</span> <span class="p">{</span>
+                <span class="na">spotify</span><span class="p">:</span> <span class="dl">'</span><span class="s1">https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA</span><span class="dl">'</span><span class="p">,</span>
+                <span class="na">instagram</span><span class="p">:</span> <span class="dl">'</span><span class="s1">https://www.instagram.com/snarkypuppy</span><span class="dl">'</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// Send the request using axios</span>
+<span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="p">{</span>
+    <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
+        <span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">,</span>
+        <span class="dl">'</span><span class="s1">Authorization</span><span class="dl">'</span><span class="p">:</span> <span class="nx">authorization</span><span class="p">,</span>
+        <span class="dl">'</span><span class="s1">Date</span><span class="dl">'</span><span class="p">:</span> <span class="nx">date</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Success:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="k">catch</span><span class="p">(</span><span class="nx">error</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="s2">`Error: </span><span class="p">${</span><span class="nx">error</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">}</span><span class="s2"> </span><span class="p">${</span><span class="nx">error</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">statusText</span><span class="p">}</span><span class="s2">`</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+</code></pre></div><div class="highlight"><pre class="highlight php tab-php"><code><span class="nv">$uri</span> <span class="o">=</span> <span class="s2">"https://api-staging.even.biz/api/v1/distribution/artists"</span><span class="p">;</span>
+
+<span class="c1">// Prepare HTTP request</span>
+<span class="nv">$ch</span> <span class="o">=</span> <span class="nb">curl_init</span><span class="p">(</span><span class="nv">$uri</span><span class="p">);</span>
+
+<span class="nv">$method</span> <span class="o">=</span> <span class="s1">'POST'</span><span class="p">;</span>
+<span class="nv">$endpoint</span> <span class="o">=</span> <span class="nb">parse_url</span><span class="p">(</span><span class="nv">$uri</span><span class="p">,</span> <span class="kc">PHP_URL_PATH</span><span class="p">);</span>
+<span class="nv">$date</span> <span class="o">=</span> <span class="nb">gmdate</span><span class="p">(</span><span class="s1">'D, d M Y H:i:s T'</span><span class="p">);</span>
+
+<span class="c1">// Generate required headers</span>
+<span class="nv">$signed_auth_header</span> <span class="o">=</span> <span class="nf">sign_headers</span><span class="p">(</span><span class="nv">$method</span><span class="p">,</span> <span class="nv">$endpoint</span><span class="p">,</span> <span class="nv">$date</span><span class="p">);</span>
+
+<span class="c1">// Set custom headers</span>
+<span class="nv">$headers</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">'Content-Type: application/json'</span><span class="p">,</span>
+    <span class="s1">'Authorization: '</span> <span class="mf">.</span> <span class="nv">$signed_auth_header</span><span class="p">,</span>
+    <span class="s1">'Date: '</span> <span class="mf">.</span> <span class="nv">$date</span><span class="p">,</span>
+<span class="p">];</span>
+
+<span class="c1">// Request body</span>
+<span class="nv">$body</span> <span class="o">=</span> <span class="nb">json_encode</span><span class="p">([</span>
+    <span class="s2">"artist"</span> <span class="o">=&gt;</span> <span class="p">[</span>
+            <span class="s2">"name"</span> <span class="o">=&gt;</span> <span class="s2">"Snarky Puppy"</span><span class="p">,</span>
+            <span class="s2">"email"</span> <span class="o">=&gt;</span> <span class="s2">"Snarky@puppy.com"</span><span class="p">,</span>
+            <span class="s2">"links"</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s2">"spotify"</span> <span class="o">=&gt;</span> <span class="s2">"https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA"</span><span class="p">,</span>
+                <span class="s2">"instagram"</span> <span class="o">=&gt;</span> <span class="s2">"https://www.instagram.com/snarkypuppy"</span><span class="p">,</span>
+                <span class="s2">"soundcloud"</span> <span class="o">=&gt;</span> <span class="s2">"https://soundcloud.com/snarkypuppy"</span>
+            <span class="p">]</span>
+    <span class="p">]</span>
+<span class="p">]);</span>
+
+<span class="c1">// Set cURL options</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLOPT_RETURNTRANSFER</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLOPT_SSL_VERIFYPEER</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLOPT_HTTPHEADER</span><span class="p">,</span> <span class="nv">$headers</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLOPT_CUSTOMREQUEST</span><span class="p">,</span> <span class="nv">$method</span><span class="p">);</span>
+<span class="nb">curl_setopt</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLOPT_POSTFIELDS</span><span class="p">,</span> <span class="nv">$body</span><span class="p">);</span>
+
+<span class="c1">// Send request and get response</span>
+<span class="nv">$response</span> <span class="o">=</span> <span class="nb">curl_exec</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+<span class="nv">$httpcode</span> <span class="o">=</span> <span class="nb">curl_getinfo</span><span class="p">(</span><span class="nv">$ch</span><span class="p">,</span> <span class="no">CURLINFO_HTTP_CODE</span><span class="p">);</span>
+
+<span class="c1">// Handle response</span>
+<span class="k">if</span> <span class="p">(</span><span class="nv">$httpcode</span> <span class="o">&gt;=</span> <span class="mi">200</span> <span class="o">&amp;&amp;</span> <span class="nv">$httpcode</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"Success: "</span> <span class="mf">.</span> <span class="nv">$response</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">echo</span> <span class="s2">"Error: "</span> <span class="mf">.</span> <span class="nv">$httpcode</span> <span class="mf">.</span> <span class="s2">" "</span> <span class="mf">.</span> <span class="nb">curl_error</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nb">curl_close</span><span class="p">(</span><span class="nv">$ch</span><span class="p">);</span>
+</code></pre></div>
+<blockquote>
+<p>The above command returns JSON structured like this:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"artist"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"attributes"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">27</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Snarky Puppy"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"slug"</span><span class="p">:</span><span class="w"> </span><span class="s2">"snarky-puppy"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"bio"</span><span class="p">:</span><span class="w"> </span><span class="s2">"An acclaimed fusion-influenced jam band, Snarky Puppy have built a loyal following with their adventurous blend of jazz, rock, and funk. Led by bassist &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0YzrofLyUlORKLkH8AAMm9</span><span class="se">\"</span><span class="s2">&gt;Michael League&lt;/a&gt;, the Texas group emerged in the mid-2000s and garnered buzz with albums like 2006's The Only Constant, 2010's Tell Your Friends, and 2013's Family Dinner, Vol. 1, which took home the Grammy for Best R&amp;B Performance for their cover of the &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:2O8VlquQPITO4tT3SWs95W</span><span class="se">\"</span><span class="s2">&gt;Brenda Russell&lt;/a&gt; song </span><span class="se">\"</span><span class="s2">Something</span><span class="se">\"</span><span class="s2"> featuring singer &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0uNEy4544VZq2KOl7BsLuo</span><span class="se">\"</span><span class="s2">&gt;Lalah Hathaway&lt;/a&gt;. More accolades followed, including further Grammy Awards for 2015's Sylva and 2016's Culcha Vulcha, the latter of which also topped Billboard's Jazz Albums chart. The band again reached the Top Ten of the jazz charts with 2019's Immigrance and picked up their fourth Grammy Award for 2020's Live at the Royal Albert Hall. In 2022, they paid tribute to their Dallas-area roots with Empire Central.</span><span class="se">\n\n</span><span class="s2">Formed in 2004 in Denton, Texas (where the band members were studying jazz at the University of North Texas), Snarky Puppy features a wide-ranging assemblage of musicians known affectionately as </span><span class="se">\"</span><span class="s2">the Fam,</span><span class="se">\"</span><span class="s2"> centered around bassist and leader &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0YzrofLyUlORKLkH8AAMm9</span><span class="se">\"</span><span class="s2">&gt;Michael League&lt;/a&gt;. They debuted with the concert album Live at Uncommon Ground in 2005. Over the next few years, the band worked to build their fan base, touring heavily and issuing a handful of well-received albums including 2006's The Only Constant, 2007's The World Is Getting Smaller, 2008's Bring Us the Bright, 2010's Tell Your Friends, and 2012's groundUP. In 2013, Snarky Puppy released the album Family Dinner, Vol. 1, which included a cover of &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:2O8VlquQPITO4tT3SWs95W</span><span class="se">\"</span><span class="s2">&gt;Brenda Russell&lt;/a&gt;'s </span><span class="se">\"</span><span class="s2">Something</span><span class="se">\"</span><span class="s2"> featuring singer &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0uNEy4544VZq2KOl7BsLuo</span><span class="se">\"</span><span class="s2">&gt;Lalah Hathaway&lt;/a&gt;. The song proved a hit and propelled the album up various digital download charts. In 2014, </span><span class="se">\"</span><span class="s2">Something</span><span class="se">\"</span><span class="s2"> earned Snarky Puppy and &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0uNEy4544VZq2KOl7BsLuo</span><span class="se">\"</span><span class="s2">&gt;Hathaway&lt;/a&gt; the Grammy Award for Best R&amp;B Performance. Also that year, they issued the concert album We Like It Here on &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:search:label%3A%22Ropeadope%22</span><span class="se">\"</span><span class="s2">&gt;Ropeadope&lt;/a&gt;.</span><span class="se">\n\n</span><span class="s2">Snarky Puppy next signed to &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:search:label%3A%22Impulse%21%22</span><span class="se">\"</span><span class="s2">&gt;Impulse!&lt;/a&gt; and released Sylva, a collaboration with the Netherlands-based &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:7JYdpWAsiqzrmMB3qxkEbI</span><span class="se">\"</span><span class="s2">&gt;Metropole Orkest&lt;/a&gt;, in 2015. The album was greeted enthusiastically by the international press and won the band their second Grammy, this time for Best Contemporary Instrumental Album, at the 2016 Grammy Awards. They followed it with two live documents. The first was World Tour, a 32-disc box featuring their 16 favorite concerts; the deluxe package was sold exclusively through their website. In early 2016, the group also issued the audio-video set Family Dinner, Vol. 2, a documentary follow-up to the first Family Dinner that was recorded the previous year. Vol. 2 showcased the band during a concert (and included guests &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0si9BxvM2C33fAIkr1pgUc</span><span class="se">\"</span><span class="s2">&gt;Charlie Hunter&lt;/a&gt;, &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:1DiaZsjdOzFCdk7Dw9KIs0</span><span class="se">\"</span><span class="s2">&gt;Susana Baca&lt;/a&gt;, &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0VVnWF3KNaa5O7ESohKhAx</span><span class="se">\"</span><span class="s2">&gt;Salif Keita&lt;/a&gt;, and &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:59zdhVoWxSoHMc74n098Re</span><span class="se">\"</span><span class="s2">&gt;David Crosby&lt;/a&gt;), in interviews, and in backstage sequences.</span><span class="se">\n\n</span><span class="s2">In April 2016, Snarky Puppy struck again with Culcha Vulcha, their 11th studio album and first solely studio-based production in eight years. It topped the jazz album charts the week of its release and took home the prize for Best Contemporary Instrumental Album at the 2017 Grammy Awards. In 2019, they issued the &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:0YzrofLyUlORKLkH8AAMm9</span><span class="se">\"</span><span class="s2">&gt;League&lt;/a&gt;-produced Immigrance, which included the single </span><span class="se">\"</span><span class="s2">Xavi.</span><span class="se">\"</span><span class="s2"> It debuted at number two on Billboard's Jazz Albums charts. While on tour for the album, they recorded their November 14, 2019 performance in London. Released the following year as Live at the Royal Albert Hall, the record took home the Grammy Award for Best Contemporary Instrumental Album.</span><span class="se">\n\n</span><span class="s2">With 2022's Empire Central, Snarky Puppy paid tribute to their hometown of Dallas. Recorded over eight nights at the city's Deep Ellum Art Company with an audience in attendance, the album found them drawing upon their jazz and funk roots going back to their time as students at the University of North Texas. The set also marked one of the final recorded appearances of '80s funk icon &lt;a href=</span><span class="se">\"</span><span class="s2">spotify:artist:2g8J4iI5qyYFMVHcpMcSsS</span><span class="se">\"</span><span class="s2">&gt;Bernard Wright&lt;/a&gt; (a major influence on the group), who died soon after finishing the sessions. Empire Central was named Best Contemporary Instrumental Album at the 65th Annual Grammy Awards in 2023. ~ Matt Collar, Rovi"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"about"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"spotify"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://open.spotify.com/artist/7ENzCHnmJUr20nUjoZ0zZ1?si=KpNjtD0HTsiShOTM2ZuFdA"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"instagram"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.instagram.com/snarkypuppy"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"soundcloud"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://soundcloud.com/snarkypuppy"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Brooklyn"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"published"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"private"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"hidden"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"verified"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"onboarded"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-10-07T05:59:46.957Z"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-10-07T05:59:46.957Z"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"upload_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"approved"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"relationships"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"releases"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"included"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
+<p>This endpoint creates artists in bulk.</p>
+<h3 id='http-request-3'>HTTP Request</h3>
+<ul>
+<li><strong>Production</strong>: <code>POST https://api.even.biz/api/v1/distribution/artists</code></li>
+<li><strong>Stage</strong>: <code>POST https://api-staging.even.biz/api/v1/distribution/artists</code></li>
+</ul>
+<h3 id='body-parameters'>Body Parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>artist</td>
+<td>An objects containing information about artists.</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>artist[].name</td>
+<td>The name of the artist.</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>artist[].email</td>
+<td>The email address of the artist.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].external_id</td>
+<td>A unique identifier for the artist provided by the partner. This value is optional and is only used to help the partner reference or match the artist with their own internal systems. It is not generated or validated by EVEN.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].links</td>
+<td>An object containing the artist&#39;s social media links.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].links.spotify</td>
+<td>The Spotify link of the artist.</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].links.instagram</td>
+<td>The Instagram link of the artist (if available).</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].links.soundcloud</td>
+<td>The SoundCloud link of the artist (if available).</td>
+<td>No</td>
+</tr>
+<tr>
+<td>artist[].links.youtube</td>
+<td>The YouTube link of the artist (if available).</td>
+<td>No</td>
+</tr>
+</tbody></table>
 <h2 id='create-bulk-artists'>Create Bulk Artists</h2><div class="highlight"><pre class="highlight ruby tab-ruby"><code><span class="n">uri</span> <span class="o">=</span> <span class="no">URI</span><span class="p">(</span><span class="s2">"https://api-staging.even.biz/api/v1/distribution/artists/bulk_create"</span><span class="p">)</span>
 
 <span class="c1"># Prepare HTTP request</span>
@@ -1107,12 +1373,12 @@ You must replace <code>SIGNED_AUTHORIZATION_HEADER</code>.
 
 </span></code></pre></div>
 <p>This endpoint creates artists in bulk.</p>
-<h3 id='http-request-3'>HTTP Request</h3>
+<h3 id='http-request-4'>HTTP Request</h3>
 <ul>
 <li><strong>Production</strong>: <code>POST https://api.even.biz/api/v1/distribution/artists/bulk_create</code></li>
 <li><strong>Stage</strong>: <code>POST https://api-staging.even.biz/api/v1/distribution/artists/bulk_create</code></li>
 </ul>
-<h3 id='body-parameters'>Body Parameters</h3>
+<h3 id='body-parameters-2'>Body Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -1378,12 +1644,12 @@ You must replace <code>SIGNED_AUTHORIZATION_HEADER</code>.
   </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
 
-</span></code></pre></div><h3 id='http-request-4'>HTTP Request</h3>
+</span></code></pre></div><h3 id='http-request-5'>HTTP Request</h3>
 <ul>
 <li><strong>Production</strong>: <code>POST https://api.even.biz/api/v1/distribution/artists/import</code></li>
 <li><strong>Stage</strong>: <code>POST https://api-staging.even.biz/api/v1/distribution/artists/import</code></li>
 </ul>
-<h3 id='body-parameters-2'>Body Parameters</h3>
+<h3 id='body-parameters-3'>Body Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -1592,12 +1858,12 @@ Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888
   </span><span class="p">},</span><span class="w">
   </span><span class="nl">"included"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
 </span><span class="p">}</span><span class="w">
-</span></code></pre></div><h3 id='http-request-5'>HTTP Request</h3>
+</span></code></pre></div><h3 id='http-request-6'>HTTP Request</h3>
 <ul>
 <li><strong>Production</strong>: <code>POST https://api.even.biz/api/v1/distribution/artists/:artist_id/claim</code></li>
 <li><strong>Stage</strong>: <code>POST https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/claim</code></li>
 </ul>
-<h3 id='body-parameters-3'>Body Parameters</h3>
+<h3 id='body-parameters-4'>Body Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -1804,12 +2070,12 @@ Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888
   </span><span class="p">},</span><span class="w">
   </span><span class="nl">"included"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
 </span><span class="p">}</span><span class="w">
-</span></code></pre></div><h3 id='http-request-6'>HTTP Request</h3>
+</span></code></pre></div><h3 id='http-request-7'>HTTP Request</h3>
 <ul>
 <li><strong>Production</strong>: <code>PUT https://api.even.biz/api/v1/distribution/artists/:artist_id</code></li>
 <li><strong>Stage</strong>: <code>PUT https://api-staging.even.biz/api/v1/distribution/artists/:artist_id</code></li>
 </ul>
-<h3 id='body-parameters-4'>Body Parameters</h3>
+<h3 id='body-parameters-5'>Body Parameters</h3>
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -1899,7 +2165,7 @@ Snarky Puppy,Snarky@puppy.com,https://open.spotify.com/artist/7142321893?si=8888
 <p><strong>Note</strong>: This endpoint will <strong>not</strong> remove the Artist from our database. It will only remove the associations between the Partner and the Artist. For full data deletion, please contact us.</p>
 
 <p>You can verify the request work from the HTTP status <code>200</code> response, and by using the <code>api/v1/distribution/artists</code> or <code>api/v1/distribution/artists/:id</code> endpoints to make sure the artist is no longer available for that Partner.</p>
-<h3 id='http-request-7'>HTTP Request</h3>
+<h3 id='http-request-8'>HTTP Request</h3>
 <ul>
 <li><strong>Production</strong>: <code>POST https://api.even.biz/api/v1/distribution/artists/:artist_id/remove</code></li>
 <li><strong>Stage</strong>: <code>POST https://api-staging.even.biz/api/v1/distribution/artists/:artist_id/remove</code></li>
