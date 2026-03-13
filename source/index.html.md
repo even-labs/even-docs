@@ -1904,6 +1904,248 @@ curl_close($ch);
 
 > The above command returns an HTTP status `200`.
 
+## Search Release
+
+```ruby
+require 'net/http'
+require 'json'
+
+# Search by UPC
+upc = "123456789012"
+endpoint = "/api/v1/distribution/releases/search?upc=#{upc}"
+uri = URI("https://api-staging.even.biz#{endpoint}")
+
+# Prepare HTTP request
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+
+request = Net::HTTP::Get.new("#{uri.path}?#{uri.query}", 'Content-Type' => 'application/json')
+
+# Generate required headers
+date = Time.now.utc.httpdate
+signed_auth_header = sign_headers(method: :get, endpoint: endpoint, date: date)
+
+# Set custom headers
+request['Authorization'] = signed_auth_header
+request['Date'] = date
+
+# Send request
+response = http.request(request)
+
+# Handle response
+if response.is_a?(Net::HTTPSuccess)
+  puts "Success: #{response.body}"
+else
+  puts "Error: #{response.code} #{response.message}"
+end
+```
+
+```python
+import requests
+
+# Search by UPC
+upc = "123456789012"
+endpoint = f"/api/v1/distribution/releases/search?upc={upc}"
+url = f"https://api-staging.even.biz{endpoint}"
+date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+signed_auth_header = sign_headers(method='get', endpoint=endpoint, date=date)
+
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': signed_auth_header,
+    'Date': date
+}
+
+# Send GET request
+response = requests.get(url, headers=headers)
+
+# Handle response
+if response.status_code == 200:
+    print(f"Success: {response.text}")
+else:
+    print(f"Error: {response.status_code} {response.reason}")
+```
+
+```javascript
+const axios = require('axios');
+
+// Search by UPC
+const upc = '123456789012';
+const endpoint = `/api/v1/distribution/releases/search?upc=${upc}`;
+const url = `https://api-staging.even.biz${endpoint}`;
+
+// Generate date and authorization header
+const date = new Date().toUTCString();
+const authorization = signHeaders('GET', endpoint, date);
+
+// Send the request using axios
+axios.get(url, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authorization,
+        'Date': date
+    }
+})
+    .then(response => {
+        console.log('Success:', response.data);
+    })
+    .catch(error => {
+        if (error.response) {
+            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
+        } else {
+            console.error(error.message);
+        }
+    });
+```
+
+```php
+// Search by UPC
+$upc = "123456789012";
+$endpoint = "/api/v1/distribution/releases/search?upc={$upc}";
+$uri = "https://api-staging.even.biz{$endpoint}";
+
+// Prepare HTTP request
+$ch = curl_init($uri);
+
+$method = 'GET';
+$date = gmdate('D, d M Y H:i:s T');
+
+// Generate required headers
+$signed_auth_header = sign_headers($method, $endpoint, $date);
+
+// Set custom headers
+$headers = [
+    'Content-Type: application/json',
+    'Authorization: ' . $signed_auth_header,
+    'Date: ' . $date,
+];
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+// Send request and get response
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+// Handle response
+if ($httpcode >= 200 && $httpcode < 300) {
+    echo "Success: " . $response;
+} else {
+    echo "Error: " . $httpcode . " " . curl_error($ch);
+}
+
+curl_close($ch);
+```
+
+> The above command returns JSON structured like this:
+
+```json
+{
+  "data": {
+    "id": "14652",
+    "type": "release",
+    "attributes": {
+      "id": 14652,
+      "name": "Spontaneous",
+      "slug": "spontaneous-b57975ca-0d4f-4b66-bebd-e37c11d0d566",
+      "released_at": "2025-09-29T06:00:00.000Z",
+      "created_at": "2025-09-11T23:51:34.185Z",
+      "updated_at": "2025-09-30T01:36:27.976Z",
+      "release_type": "album",
+      "status": "on-sale",
+      "url": "https://even.biz//r/spontaneous-b57975ca-0d4f-4b66-bebd-e37c11d0d566"
+    },
+    "relationships": {
+      "artists": {
+        "data": [
+          {
+            "id": "12503",
+            "type": "artist"
+          }
+        ]
+      },
+      "albums": {
+        "data": [
+          {
+            "id": "14594",
+            "type": "album"
+          }
+        ]
+      }
+    }
+  },
+  "included": [
+    {
+      "id": "12503",
+      "type": "artist",
+      "attributes": {
+        "id": 12503,
+        "name": "Shamaya Lane",
+        "slug": "shamaya-lane"
+      },
+      "relationships": {}
+    },
+    {
+      "id": "64218",
+      "type": "track",
+      "attributes": {
+        "id": 64218,
+        "title": "Track 1",
+        "number": 1,
+        "isrc": "",
+        "album_id": 14594
+      },
+      "relationships": {}
+    },
+    {
+      "id": "64219",
+      "type": "track",
+      "attributes": {
+        "id": 64219,
+        "title": "Track 2",
+        "number": 2,
+        "isrc": "",
+        "album_id": 14594
+      },
+      "relationships": {}
+    },
+    {
+      "id": "14594",
+      "type": "album",
+      "attributes": {
+        "id": 14594,
+        "name": "Spontaneous",
+        "slug": "spontaneous-4eca16a2-680b-4923-9a80-83f9ce501d82",
+        "upc": "123456789012",
+        "release_id": 14652
+      },
+      "relationships": {}
+    }
+  ]
+}
+```
+
+This endpoint searches for a release by UPC or ISRC code. Only releases that are published and approved are returned. Draft or unapproved releases will return a `404 Not Found` response.
+
+### HTTP Request
+
+- **Production**: `GET https://api.even.biz/api/v1/distribution/releases/search`
+- **Stage**: `GET https://api-staging.even.biz/api/v1/distribution/releases/search`
+
+### Query Parameters
+
+Parameter | Description | Required
+--------- | ----------- | -----------
+upc | The UPC code of the album to search for | No*
+isrc | The ISRC code of the track to search for | No*
+
+<aside class="notice">
+*At least one of <code>upc</code> or <code>isrc</code> must be provided. If neither is provided, the endpoint returns <code>404 Not Found</code>.
+</aside>
+
 # Data Delivery Method
 
 ## AWS
